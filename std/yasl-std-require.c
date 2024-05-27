@@ -118,7 +118,7 @@ static void *search_on_path(const char *path, const char *name, const char sep, 
 		buffer[end - start + strlen(name) - 1] = '\0';
 
 #if defined(YASL_USE_WIN)
-		void *lib = LoadLibrary(TEXT(buffer));
+		void *lib = LoadLibraryA(buffer);
 #elif defined(YASL_USE_UNIX) || defined(YASL_USE_APPLE)
 		void *lib = dlopen(buffer, RTLD_NOW);
 #else
@@ -132,7 +132,7 @@ static void *search_on_path(const char *path, const char *name, const char sep, 
 		end = strchr(start, dirmark);
 	}
 #if defined(YASL_USE_WIN)
-	return LoadLibrary(TEXT(path));
+	return LoadLibraryA(path);
 #elif defined(YASL_USE_UNIX) || defined(YASL_USE_APPLE)
 	return dlopen(name, RTLD_NOW);
 #else
