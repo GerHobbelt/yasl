@@ -92,7 +92,7 @@ int YASL_execute_REPL(struct YASL_State *S);
  * [-n-1, +r]
  * Calls a function with n parameters. The function should be located below all n
  * parameters it will be called with. The left-most parameter is placed directly above
- * the function, the right-most paramter at the top of the stack.
+ * the function, the right-most parameter at the top of the stack.
  * @param S the YASL_State
  * @param n
  * @return r, the number of return values of the called functions
