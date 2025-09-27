@@ -40,19 +40,19 @@ int table___eq(struct YASL_State *S) {
 	}
 
 	FOR_TABLE(i, item, left) {
-			struct YASL_Object search = YASL_Table_search(right, item->key);
-			if (search.type == Y_END) {
-				YASL_pushbool(S, false);
-				return 1;
-			}
-			vm_push((struct VM *) S, item->value);
-			vm_push((struct VM *) S, search);
-			vm_EQ((struct VM *) S);
-			if (!YASL_popbool(S)) {
-				YASL_pushbool(S, false);
-				return 1;
-			}
+		struct YASL_Object search = YASL_Table_search(right, item->key);
+		if (search.type == Y_END) {
+			YASL_pushbool(S, false);
+			return 1;
 		}
+		vm_push((struct VM *) S, item->value);
+		vm_push((struct VM *) S, search);
+		vm_EQ((struct VM *) S);
+		if (!YASL_popbool(S)) {
+			YASL_pushbool(S, false);
+			return 1;
+		}
+	}
 
 	YASL_pushbool(S, true);
 	return 1;
@@ -63,7 +63,7 @@ int table___get(struct YASL_State *S) {
 	struct YASL_Table *ht = YASLX_checkntable(S, "table.__get", 0);
 	struct YASL_Object result = YASL_Table_search(ht, key);
 	if (result.type == Y_END) {
-		vm_pushundef(&S->vm);
+		vm_push(&S->vm, ht->default_val);
 	} else {
 		vm_push((struct VM *) S, result);
 	}
@@ -241,10 +241,7 @@ int table_values(struct YASL_State *S) {
 
 int table_remove(struct YASL_State *S) {
 	struct YASL_Object key = vm_pop((struct VM *) S);
-	if (!YASL_istable(S)) {
-		YASLX_print_and_throw_err_bad_arg_type_n(S, "table.remove", 0, YASL_TABLE_NAME);
-	}
-	struct YASL_Table *ht = YASL_GETTABLE(vm_peek((struct VM *) S));
+	struct YASL_Table *ht = YASLX_checkntable(S, "table.remove", 0);
 
 	YASL_Table_rm(ht, key);
 	return 1;
@@ -259,15 +256,15 @@ int table_copy(struct YASL_State *S) {
 	}
 
 	ud_setmt(&S->vm, new_ht, obj_get_metatable(&S->vm, vm_peek(&S->vm)));
+	((struct YASL_Table *)(new_ht->data))->default_val = ht->default_val;
+	inc_ref(&ht->default_val);
 	vm_push((struct VM *) S, YASL_TABLE(new_ht));
 	return 1;
 }
 
 int table_clear(struct YASL_State *S) {
-	if (!YASL_istable(S)) {
-		YASLX_print_and_throw_err_bad_arg_type_n(S, "table.clear", 0, YASL_TABLE_NAME);
-	}
-	struct YASL_Table *ht = YASL_GETTABLE(vm_peek((struct VM *) S));
+	struct YASL_Table *ht = YASLX_checkntable(S, "table.clear", 0);
+
 	inc_ref(&vm_peek((struct VM *) S));
 	FOR_TABLE(i, item, ht) {
 		del_item(item);
@@ -278,7 +275,14 @@ int table_clear(struct YASL_State *S) {
 	free(ht->items);
 	ht->items = (struct YASL_Table_Item *) calloc((size_t) ht->size, sizeof(struct YASL_Table_Item));
 	vm_dec_ref(&S->vm, &vm_peek((struct VM *) S));
-	YASL_pop(S);
 
 	return 0;
+}
+
+int table_setdefault(struct YASL_State *S) {
+	struct YASL_Table *ht = YASLX_checkntable(S, "table.setdefault", 0);
+	dec_ref(&ht->default_val);
+	inc_ref(vm_peek_p(&S->vm));
+	ht->default_val = vm_peek(&S->vm);
+	return 2;
 }

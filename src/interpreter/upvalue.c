@@ -15,6 +15,7 @@ struct YASL_Object upval_get(const struct Upvalue *const upval) {
 void upval_set(struct VM* const vm, struct Upvalue *const upval, const struct YASL_Object v) {
 	vm_dec_ref(vm, upval->location);
 	*upval->location = v;
+	inc_ref(upval->location);
 }
 
 void upval_close(struct Upvalue *const upval) {

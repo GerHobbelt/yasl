@@ -20,9 +20,11 @@ set(CMAKE_CXX_STANDARD 11)
 
 # 4244 is lossy coercions:
 # https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-levels-3-and-4-c4244
+# 4003 is empty macro parameters:
+# https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4003?view=msvc-170
 if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    set(CMAKE_C_FLAGS "/WX /W3 /wd4244")
+    set(CMAKE_C_FLAGS "/WX /W3 /wd4244 /wd4003")
 endif()
 
 if (NOT "${CMAKE_C_COMPILER_ID}" MATCHES ".*MSVC.*")
@@ -69,23 +71,24 @@ add_executable(yasl
         src/compiler/parser.c
         src/interpreter/upvalue.c
         src/interpreter/closure.c
-        src/interpreter/bool_methods.c
+        src/interpreter/methods/bool_methods.c
         src/interpreter/builtins.c
-        src/interpreter/float_methods.c
+        src/interpreter/methods/float_methods.c
         src/util/yasl_float.c
-        src/interpreter/int_methods.c
+        src/interpreter/methods/int_methods.c
         src/data-structures/YASL_List.c
-        src/interpreter/list_methods.c
-        src/interpreter/table_methods.c
+        src/interpreter/methods/list_methods.c
+        src/interpreter/methods/table_methods.c
         src/interpreter/VM.c
+        src/interpreter/GC.c
         src/interpreter/YASL_Object.c
         src/interpreter/refcount.c
-        src/interpreter/str_methods.c
+        src/interpreter/methods/str_methods.c
         src/data-structures/LString.c
         src/data-structures/YASL_String.c
         src/data-structures/YASL_StringSet.c
         src/interpreter/userdata.c
-        src/interpreter/undef_methods.c
+        src/interpreter/methods/undef_methods.c
         src/std/yasl-std-io.c
         src/std/yasl-std-math.c
         src/std/yasl-std-require.c
@@ -120,25 +123,26 @@ add_library(yaslapi
         src/compiler/middleend.c
         src/util/hash_function.c
         src/data-structures/YASL_Table.c
-        src/interpreter/bool_methods.c
+        src/interpreter/methods/bool_methods.c
         src/interpreter/builtins.c
-        src/interpreter/float_methods.c
+        src/interpreter/methods/float_methods.c
         src/interpreter/upvalue.c
         src/interpreter/closure.c
         src/util/yasl_float.c
-        src/interpreter/int_methods.c
+        src/interpreter/methods/int_methods.c
         src/data-structures/YASL_List.c
         src/data-structures/LString.c
         src/data-structures/YASL_StringSet.c
-        src/interpreter/list_methods.c
-        src/interpreter/table_methods.c
+        src/interpreter/methods/list_methods.c
+        src/interpreter/methods/table_methods.c
         src/interpreter/VM.c
+        src/interpreter/GC.c
         src/interpreter/YASL_Object.c
         src/interpreter/refcount.c
-        src/interpreter/str_methods.c
+        src/interpreter/methods/str_methods.c
         src/data-structures/YASL_String.c
         src/interpreter/userdata.c
-        src/interpreter/undef_methods.c
+        src/interpreter/methods/undef_methods.c
         src/util/prime.c
         src/util/IO.c
         src/util/varint.c
@@ -183,6 +187,7 @@ add_executable(tests
         test/unit_tests/test_methods/listtest.c
         test/unit_tests/test_methods/strtest.c
         test/unit_tests/test_vm/vmtest.c
+        test/unit_tests/test_gc/gctest.c
         test/unit_tests/test_util/utiltest.c
         test/unit_tests/test_api/fntest.c
         test/unit_tests/test_api/deltest.c
